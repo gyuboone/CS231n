@@ -101,7 +101,7 @@ class KNearestNeighbor(object):
             #######################################################################
             # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-            dists[i,:] = np.sum(np.square(self.X_train - X[i]), axis = 1)
+            dists[i,:] = np.sqrt(np.sum(np.square(self.X_train - X[i]), axis = 1))
 
             # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
         return dists
