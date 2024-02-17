@@ -12,8 +12,8 @@ def svm_loss_naive(W, X, y, reg):
     of N examples.
 
     Inputs:
-    - W: A numpy array of shape (D, C) containing weights.
-    - X: A numpy array of shape (N, D) containing a minibatch of data.
+    - W: A numpy array of shape (D, C) containing weights. (3073x10 in this assignment)
+    - X: A numpy array of shape (N, D) containing a minibatch of data. (49000x3073 in this assigment)
     - y: A numpy array of shape (N,) containing training labels; y[i] = c means
       that X[i] has label c, where 0 <= c < C.
     - reg: (float) regularization strength
@@ -29,13 +29,17 @@ def svm_loss_naive(W, X, y, reg):
     num_train = X.shape[0]
     loss = 0.0
     for i in range(num_train):
-        scores = X[i].dot(W)
-        correct_class_score = scores[y[i]]
+        scores = X[i].dot(W)    # 49000x10
+        correct_class_score = scores[y[i]]    # correct value in 10 classes
         for j in range(num_classes):
             if j == y[i]:
                 continue
             margin = scores[j] - correct_class_score + 1  # note delta = 1
             if margin > 0:
+                #### update dW start ####
+                dW[:,j] += X[i,:]
+                dW[:,y[i]] -= X[i,:]
+                #### update dW end   ####
                 loss += margin
 
     # Right now the loss is a sum over all training examples, but we want it
@@ -55,7 +59,8 @@ def svm_loss_naive(W, X, y, reg):
     #############################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-    pass
+    dW /= num_train
+    dW += 2*reg*W
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
@@ -78,7 +83,11 @@ def svm_loss_vectorized(W, X, y, reg):
     #############################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-    pass
+    scores_matrix = X @ W    # N x 10
+    correct_class_score=scores_matrix[np.arange(len(y)), y]
+
+    loss += np.sum(np.maximum(scores_matrix - correct_class_score.reshape(-1,1) + 1, 0))/ X.shape[0]-1
+    loss += reg*np.sum(W * W)
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
@@ -93,7 +102,10 @@ def svm_loss_vectorized(W, X, y, reg):
     #############################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-    pass
+    matrix_01 = (np.maximum(scores_matrix - correct_class_score.reshape(-1,1) + 1, 0) >0).astype(int)
+    matrix_01[np.arange(len(y)),y] -= np.sum(matrix_01, axis=1)
+
+    dW += X.T @ matrix_01 / X.shape[0] + 2*reg*W
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
